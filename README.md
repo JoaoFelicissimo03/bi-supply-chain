@@ -96,7 +96,7 @@ pip install -r requirements.txt
 ## 🗓️ Project Timeline
 
 - [x] **Week 1** — Data modelling, PostgreSQL, Python ETL
-- [ ] **Week 2** — Power BI connection, DAX measures, dashboard wireframe
+- [x] **Week 2** — Power BI connection, DAX measures, dashboard wireframe
 - [ ] **Week 3** — Dashboard build, publish to Power BI Service, final README
 
 ---
