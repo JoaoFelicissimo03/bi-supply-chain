@@ -1,6 +1,6 @@
 # 📦 BI Supply Chain Dashboard
 
-> Executive Business Intelligence dashboard for supply chain operations management — built with PostgreSQL, Python and Power BI.
+> Executive Business Intelligence dashboard for supply chain operations management — built with PostgreSQL, Python and Power BI .
 
 **Status: 🚧 Work in Progress — Week 1 of 3 complete**
 
