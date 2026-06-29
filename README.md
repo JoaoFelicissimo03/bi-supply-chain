@@ -13,7 +13,7 @@ A logistics company faces delivery delays, overstock in some products and stocko
 - Are we delivering on time?
 - Where are we losing money in logistics?
 - Which products and regions are most problematic?
-- How is gross margin evolving category?
+- Ho
 
 ---
 
