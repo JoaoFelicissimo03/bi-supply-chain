@@ -8,7 +8,7 @@
 
 ## 🎯 Business Problem
 
-A logistics company faces delivery delays, overstock in some products and stockouts in others. The Operations Director needs a **daily cockpit** to answer:
+A logistics company faces delivery delays, overstock in some products and stockouts in others. The Operations Director needs a **daily cockpit** to answer
 
 - Are we delivering on time?
 - Where are we losing money in logistics?
