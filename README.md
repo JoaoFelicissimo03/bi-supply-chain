@@ -1,19 +1,19 @@
 # 📦 BI Supply Chain Dashboard
 
-> Executive Business Intelligence dashboard for supply chain operations management — built with PostgreSQL, Python and Power BI .
+> Executive Business Intelligence dashboard for supply chain operations management — built with PostgreSQL, Python and Power BI.
 
-**Status: 🚧 Work in Progress — Week 1 of 3 complete**
+**Status: 🚧 Work in Progress — Week 3 of 3 (Executive Overview page complete)**
 
 ---
 
 ## 🎯 Business Problem
 
-A logistics company faces delivery delays, overstock in some products and stockouts in others. The Operations Director needs a **daily cockpit** to answer
+A logistics company faces delivery delays, overstock in some products and stockouts in others. The Operations Director needs a **daily cockpit** to answer:
 
 - Are we delivering on time?
 - Where are we losing money in logistics?
 - Which products and regions are most problematic?
-- Ho
+- How is gross margin evolving by category?
 
 ---
 
@@ -79,25 +79,28 @@ pip install -r requirements.txt
 
 ---
 
-## 📊 KPIs (in development)
+## 📊 KPIs
 
-| KPI | Logic | Visual |
-|---|---|---|
-| On-Time Delivery Rate | On-time deliveries / Total deliveries | Card + Gauge |
-| Order Fill Rate | Complete orders / Total orders | Card |
-| Gross Margin % | (Revenue - Cost) / Revenue | Card + Trend |
-| Avg Shipping Cost | Total shipping cost / No. of orders | Card |
-| Avg Delay (days) | AVG (real - scheduled days) | Card |
-| Revenue by Region | SUM revenue by region | Map |
-| Top 10 Late Products | COUNT late deliveries by product | Bar chart |
+| KPI | Logic | Visual | Status |
+|---|---|---|---|
+| On-Time Delivery Rate | On-time deliveries / Total deliveries | Gauge w/ 85% target | ✅ Done |
+| Gross Margin % | AVERAGE of per-order profit margin | Card | ✅ Done |
+| Avg Shipping Cost | Total shipping cost / No. of orders | Card | ✅ Done |
+| Avg Delay (days) | AVG (real - scheduled days) | Card | ✅ Done |
+| Total Revenue | SUM of order revenue | Card | ✅ Done |
+| Total Orders | COUNT of orders | Card | ✅ Done |
+| Revenue by Geography | SUM revenue, drill-down Market → Region → Country | Filled Map | ✅ Done |
+| Top 10 Late Products | COUNT late deliveries by product | Bar chart | ⏳ Page 2 |
+
+A key technical challenge solved this week: the model has two fact tables (`fact_orders` and `fact_shipments`) linked only through `dim_date`, so slicers on Region, Category and Segment weren't reaching shipment-level measures. Fixed using `TREATAS()` in DAX to propagate the filtered `order_id` context from `fact_orders` into `fact_shipments` without relying on a direct model relationship.
 
 ---
 
 ## 🗓️ Project Timeline
 
 - [x] **Week 1** — Data modelling, PostgreSQL, Python ETL
-- [x] **Week 2** — Power BI connection, DAX measures, dashboard wireframe
-- [ ] **Week 3** — Dashboard build, publish to Power BI Service, final README
+- [x] **Week 2** — Power BI connection, DAX measures, dashboard wireframe, color theme
+- [ ] **Week 3** — Dashboard build *(in progress — Executive Overview page complete, Operations Detail page next)*, publish to Power BI Service, final README
 
 ---
 
