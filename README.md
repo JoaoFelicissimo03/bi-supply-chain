@@ -1,6 +1,6 @@
 # 📦 BI Supply Chain Dashboard
 
-> An end-to-end Business Intelligence project simulating an executive cockpit for supply chain operations — built with PostgreSQL, Python, and Power BI.
+> An end-to-end Business Intelligence project simulating an executive cockpit for supply chain operations — built with PostgreSQL, Python, and Power BI. HEE HEE
 
 ![Dashboard Preview](docs/dashboard_preview.png)
 
