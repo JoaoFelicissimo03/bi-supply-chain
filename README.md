@@ -1,6 +1,6 @@
 # 📦 BI Supply Chain Dashboard
 
-> An end-to-end Business Intelligence project simulating an executive cockpit for supply chain operations — built with PostgreSQL, Python, and Power BI. HEE HEE
+> An end-to-end Business Intelligence project simulating an executive cockpit for supply chain operations — built with PostgreSQL, Python, and Power BI.
 
 ![Dashboard Preview](docs/dashboard_preview.png)
 
@@ -15,7 +15,7 @@
 - [Dashboard](#-dashboard)
 - [KPIs & DAX Measures](#-kpis--dax-measures)
 - [Key Technical Challenges](#-key-technical-challenges)
-- [Conclusions](#-conclusions)
+- [Conclusions & Key Findings](#-conclusions--key-findings)
 - [How to Run](#-how-to-run)
 - [Project Structure](#-project-structure)
 
@@ -104,11 +104,11 @@ dim_region     →  region_id, region, country, market
 
 ## 📊 Dashboard
 
-The dashboard is structured across **two pages**, each serving a distinct audience need.
+The dashboard is structured across **three pages**, each serving a distinct analytical purpose.
 
 ### Page 1 — Executive Overview
 
-Designed for the Operations Director's daily briefing. Answers the question: *"How are we performing right now?"*
+Designed for the Operations Director's daily briefing. Answers: *"How are we performing right now?"*
 
 | Visual | Content |
 |---|---|
@@ -118,27 +118,40 @@ Designed for the Operations Director's daily briefing. Answers the question: *"H
 | Card | Average Delay Days |
 | Card | Total Orders |
 | Card | Total Revenue |
-| Filled Map | Revenue by Geography — drill-down from Market → Region → Country |
+| Filled Map | Revenue by Geography — drill-down Market → Region → Country |
 
-Slicers: **Year range** (date slider), **Region**, **Category**, **Customer Segment**
+### Page 2 — Financial Performance
 
-### Page 2 — Operations Detail
-
-Designed for deeper operational analysis. Answers the question: *"Where exactly is the problem and why?"*
+Designed for financial analysis. Answers: *"Where are we making and losing money?"*
 
 | Visual | Content |
 |---|---|
-| Bar Chart (horizontal) | Top 10 Products by Late Deliveries |
-| Line Chart | Gross Margin % Trend (2015–2018) with drill-down by Year → Quarter → Month |
-| Table | Performance by Region — Revenue, On-Time Rate, Gross Margin % |
+| Card | Total Revenue |
+| Card | Total Profit |
+| Bar Chart | Top 10 Categories by Revenue |
+| Line Chart | Gross Margin % Trend (drill-down Year → Quarter → Month) |
+| Table | Performance by Region — Revenue, Profit, Gross Margin %, On-Time Rate |
 
-Slicers are **synchronised** across both pages — a filter applied on Page 1 persists when navigating to Page 2.
+### Page 3 — Delivery Performance
+
+Designed for operational deep-dive. Answers: *"Where and why are deliveries failing?"*
+
+| Visual | Content |
+|---|---|
+| Card | On-Time Delivery Rate |
+| Card | Total Late Deliveries |
+| Card | Average Days Late |
+| Combined Chart | On-Time Rate & Avg Days Late by Shipping Mode |
+| Filled Map | Late Delivery Rate by Country (green = low, red = high) |
+| Scatter | Gross Margin % vs Avg Shipping Cost by Market & Country |
+
+Slicers are **synchronised across all three pages** — Year range, Region, Category, Customer Segment.
 
 ---
 
 ## 📐 KPIs & DAX Measures
 
-All measures are stored in a dedicated `_Measures` table for organisation.
+All measures are stored in a dedicated `_Measures` table for organisation. Measures that cross fact tables use `TREATAS()` to propagate filter context — see [Key Technical Challenges](#-key-technical-challenges) for details.
 
 ```dax
 Total Revenue =
@@ -147,26 +160,14 @@ SUM(fact_orders[total_revenue])
 Total Orders =
 COUNTROWS(fact_orders)
 
+Total Profit =
+SUMX(fact_orders, fact_orders[total_revenue] * fact_orders[profit_margin])
+
 Gross Margin % =
 AVERAGE(fact_orders[profit_margin])
 
 Avg Shipping Cost =
-DIVIDE(
-    SUM(fact_shipments[shipping_cost]),
-    COUNTROWS(fact_orders)
-)
-
-Avg Delay Days =
-VAR FilteredOrders = VALUES(fact_orders[order_id])
-VAR AvgDelay =
-    CALCULATE(
-        AVERAGEX(
-            fact_shipments,
-            fact_shipments[days_for_shipping_real] - fact_shipments[days_for_shipment_scheduled]
-        ),
-        TREATAS(FilteredOrders, fact_shipments[order_id])
-    )
-RETURN FORMAT(AvgDelay, "0.00") & " days"
+DIVIDE(SUM(fact_shipments[shipping_cost]), COUNTROWS(fact_orders))
 
 On-Time Delivery Rate =
 VAR FilteredOrders = VALUES(fact_orders[order_id])
@@ -183,7 +184,7 @@ DIVIDE(
     )
 )
 
-Late Deliveries by Product =
+Total Late Deliveries =
 VAR FilteredOrders = VALUES(fact_orders[order_id])
 RETURN
 CALCULATE(
@@ -192,18 +193,50 @@ CALCULATE(
     TREATAS(FilteredOrders, fact_shipments[order_id])
 )
 
-On-Time Target = 0.85
+Avg Days Late =
+VAR FilteredOrders = VALUES(fact_orders[order_id])
+RETURN
+CALCULATE(
+    AVERAGEX(
+        FILTER(fact_shipments, fact_shipments[late_delivery_flag] = TRUE()),
+        fact_shipments[days_for_shipping_real] - fact_shipments[days_for_shipment_scheduled]
+    ),
+    TREATAS(FilteredOrders, fact_shipments[order_id])
+)
+
+Late Delivery Rate =
+VAR FilteredOrders = VALUES(fact_orders[order_id])
+RETURN
+DIVIDE(
+    CALCULATE(
+        COUNTROWS(fact_shipments),
+        fact_shipments[late_delivery_flag] = TRUE(),
+        TREATAS(FilteredOrders, fact_shipments[order_id])
+    ),
+    CALCULATE(
+        COUNTROWS(fact_shipments),
+        TREATAS(FilteredOrders, fact_shipments[order_id])
+    )
+)
+
+Avg Shipping Cost by Region =
+VAR FilteredOrders = VALUES(fact_orders[order_id])
+RETURN
+CALCULATE(
+    AVERAGEX(fact_shipments, fact_shipments[shipping_cost]),
+    TREATAS(FilteredOrders, fact_shipments[order_id])
+)
 ```
 
 ---
 
 ## 🔧 Key Technical Challenges
 
-Several non-trivial problems were encountered and solved during this project. These are worth documenting both for transparency and as evidence of real-world problem solving.
+Several non-trivial problems were encountered and solved during this project.
 
 ### 1. Timestamp duplicates in dim_date
 
-The raw `order date` column contained full timestamps (e.g. `2018-01-13 12:27:00`), causing `drop_duplicates()` to treat each unique minute as a distinct date — producing ~65,000 rows instead of the expected ~1,100 unique dates. Fixed by converting with `pd.to_datetime()` and stripping the time component with `.dt.date` before deduplication.
+The raw `order date` column contained full timestamps (e.g. `2018-01-13 12:27:00`), causing `drop_duplicates()` to treat each unique minute as a distinct date — producing ~65,000 rows instead of ~1,127 unique dates. Fixed by converting with `pd.to_datetime()` and stripping the time component with `.dt.date` before deduplication.
 
 ### 2. PostgreSQL connection state errors
 
@@ -211,17 +244,17 @@ After a failed SQL transaction, psycopg2 enters an `InFailedSqlTransaction` stat
 
 ### 3. Composite key for dim_region
 
-Region names are not globally unique — "Eastern Asia" maps to both China and Japan. A single `region` column as the join key produced an `InvalidIndexError` during the pandas lookup. Fixed by building a composite `(region, country)` index for the lookup, ensuring uniqueness.
+Region names are not globally unique — "Eastern Asia" maps to both China and Japan. A single `region` column as the join key produced an `InvalidIndexError` during the pandas lookup. Fixed by building a composite `(region, country)` index.
 
 ### 4. Boolean type mismatch on insertion
 
-The `late_delivery_flag` column in the source CSV is stored as integer (0/1). PostgreSQL's BOOLEAN type rejected the integer values on insert. Fixed with `.astype(bool)` before loading.
+The `late_delivery_flag` column in the CSV is stored as integer (0/1). PostgreSQL's BOOLEAN type rejected integer values on insert. Fixed with `.astype(bool)` before loading.
 
 ### 5. Cross-filtering between two fact tables
 
-The model has two fact tables — `fact_orders` and `fact_shipments` — connected through `dim_date` and a 1:1 `order_id` relationship. Slicers connected to `dim_region`, `dim_product`, and `dim_customer` filtered `fact_orders` correctly but did not propagate to `fact_shipments`, leaving shipment-level KPIs (On-Time Delivery Rate, Avg Delay Days) unresponsive to those filters.
+The model has two fact tables — `fact_orders` and `fact_shipments` — connected through `dim_date` and a 1:1 `order_id` relationship. Slicers on `dim_region`, `dim_product`, and `dim_customer` filtered `fact_orders` correctly but did not propagate to `fact_shipments`, leaving all shipment-level KPIs unresponsive.
 
-Solved using `TREATAS()` in DAX — a function that applies a table of values as a filter to a column in another table, bypassing the need for a direct model relationship:
+Solved using `TREATAS()` in DAX — applied consistently across all shipment measures:
 
 ```dax
 VAR FilteredOrders = VALUES(fact_orders[order_id])
@@ -235,16 +268,68 @@ This propagates the filtered `order_id` context from `fact_orders` into `fact_sh
 
 ---
 
-## 💡 Conclusions
+## 📌 Conclusions & Key Findings
 
-*(Full conclusions section to be added upon project completion)*
+This analysis covers **65,752 orders** across **180,519 records** from 2015 to 2018, generating **$12.77M in total revenue** and **$1.54M in total profit** across global markets.
 
-Key findings from the data (2015–2018):
+### 1. Geographic Revenue Concentration
 
-- **On-Time Delivery Rate of 45.18%** — well below the 85% industry benchmark, indicating systemic delivery problems across all regions, not isolated incidents.
-- **Gross margin declined from ~12% in 2015–2017 to 9.23% in 2018**, suggesting increasing logistics costs or pricing pressure in the most recent year.
-- **Nike Men's CJ Elite is the most delayed product** with 6.8K late deliveries — nearly double the second-worst product. This warrants immediate investigation at the supplier or warehouse level.
-- **Central America and Western Europe** generate the highest revenue ($1.6M and $1.4M respectively) but show below-average on-time delivery rates, meaning the highest-value markets are also the most at-risk.
+The United States is by far the highest revenue-generating country, producing nearly double that of Mexico ($1.40B vs ~$751M), representing a significant concentration risk. At market level, **LATAM leads with $2.9B**, followed by **Europe at $2.66B**. Africa is the only market below $1B at $638M — and combined with the highest late delivery rates in the scatter analysis, suggests that both commercial penetration and operational reliability remain underdeveloped in that region.
+
+### 2. On-Time Delivery Crisis
+
+The overall **On-Time Delivery Rate of 45.18%** is critically below the **85% industry benchmark** — meaning more than half of all orders arrive late. This is not an isolated problem: **36,050 late deliveries** span all regions, segments, and shipping modes, indicating a systemic operational failure.
+
+The breakdown by shipping mode reveals the most alarming finding in the dataset:
+
+| Shipping Mode | On-Time Rate |
+|---|---|
+| Standard Class | 61.87% |
+| Same Day | 53.85% |
+| Second Class | 23.28% |
+| **First Class** | **4.73%** |
+
+**First Class — the most premium shipping option — has only a 4.73% on-time rate**, with Second Class averaging 2.5 days late when delayed. Customers paying for priority delivery are receiving the worst service in the portfolio. This warrants immediate carrier-level investigation.
+
+Late delivery rates are virtually identical across all customer segments — Home Office (55.23%), Corporate (54.75%), Consumer (54.73%) — confirming the problem is structural and not driven by order type.
+
+### 3. Gross Margin Stability with a 2018 Anomaly
+
+Gross margin remained stable between **10% and 15%** throughout 2015–2017. However, 2018 shows a decline to **9.23%** alongside a dramatic revenue drop to $331K vs $5.07M in 2017. This almost certainly reflects **incomplete 2018 data** rather than a genuine collapse — but if complete, would represent an existential crisis requiring immediate investigation.
+
+### 4. Revenue Concentration by Category
+
+The top three categories — **Men's Footwear ($1.55M), Fishing ($1.49M), Water Sports ($1.44M)** — are tightly clustered. However, there is a significant revenue cliff between 9th and 10th place (Computers at $0.28M vs the cluster above $0.66M), suggesting the bottom categories have limited commercial relevance and may warrant a strategic catalogue review.
+
+### 5. Profitability vs Volume Paradox
+
+**Central America** generates the highest absolute profit ($197K on $1.61M revenue), followed by **Western Europe** ($172K on $1.42M). However, the most interesting finding lies in smaller markets: **East Africa has the highest gross margin at 17.09%** but only $18K in total profit due to low volume. **Central Asia** shows 14.19% margin on just $4,230 in profit.
+
+This reveals a classic profitability paradox — the markets with the best unit economics are too small to scale. A targeted volume expansion strategy in East Africa and Central Asia, contingent on first improving delivery reliability, could yield disproportionate profit gains.
+
+### 6. Shipping Cost and Negative Margin Countries
+
+The scatter analysis reveals that most countries operate with positive margins, but a cluster concentrated in **Africa and Pacific Asia** shows negative gross margins. These countries typically have very low order volumes (1–15 orders), making the averages statistically fragile — a single loss-making order can produce a dramatically negative result. **Swaziland** stands out as the highest average shipping cost country at **$316 per order** while maintaining a positive 9% gross margin, demonstrating that high logistics costs alone do not determine profitability.
+
+### 7. Most Delayed Products
+
+| Product | Late Deliveries |
+|---|---|
+| Nike Men's CJ Elite 2 TD Football Cleat | 6,809 |
+| Perfect Fitness Perfect Rip Deck | 3,934 |
+| Pelican Sunstream 100 Kayak | 3,807 |
+| Nike Men's Dri-FIT Victory Golf Polo | 2,800 |
+| Diamondback Women's Serene Classic Comfort Bi | 2,450 |
+
+The Nike Men's CJ Elite has nearly **double** the late deliveries of the second-worst product. Given its position as a high-revenue item, the business impact of its delivery failures is compounded — making it the first priority for supply chain investigation.
+
+### Summary of Priority Actions
+
+1. **Investigate First Class shipping carriers immediately** — 4.73% on-time rate on the premium tier is commercially unacceptable
+2. **Focus delivery improvement on the Nike Men's CJ Elite** — highest volume, highest late delivery count
+3. **Validate 2018 data completeness** — the revenue drop is anomalous and requires confirmation
+4. **Explore volume expansion in East Africa and Central Asia** — best margin profiles in the portfolio, currently underserved
+5. **Audit loss-making countries in Africa and Pacific Asia** — low volume makes data fragile, but the pattern warrants monitoring
 
 ---
 
@@ -269,12 +354,9 @@ cd bi-supply-chain
 pip install -r requirements.txt
 ```
 
-3. Download the dataset from [Kaggle](https://www.kaggle.com/datasets/shashwatwork/dataco-smart-supply-chain-for-big-data-analysis) and place it in `/data`:
-```
-data/DataCoSupplyChainDataset.csv
-```
+3. Download the dataset from [Kaggle](https://www.kaggle.com/datasets/shashwatwork/dataco-smart-supply-chain-for-big-data-analysis) and place it in `/data`
 
-4. Create a PostgreSQL database named `supply_chain`.
+4. Create a PostgreSQL database named `supply_chain`
 
 5. Create a `.env` file in the root folder:
 ```
@@ -296,7 +378,7 @@ psql -U postgres -d supply_chain -f sql/01_create_tables.sql
 notebooks/01_etl_pipeline.ipynb
 ```
 
-8. Open `powerbi/supply_chain.pbix` in Power BI Desktop.
+8. Open `powerbi/supply_chain.pbix` in Power BI Desktop
 
 ---
 
@@ -312,7 +394,8 @@ bi-supply-chain/
 │   └── 01_etl_pipeline.ipynb         ← Python ETL: extract, transform, load
 │
 ├── sql/
-│   └── 01_create_tables.sql          ← Star Schema DDL
+│   ├── 01_create_tables.sql          ← Star Schema DDL
+│   └── 02_questions.sql              ← Analytical queries used for conclusions
 │
 ├── powerbi/
 │   ├── supply_chain.pbix             ← Power BI report file
