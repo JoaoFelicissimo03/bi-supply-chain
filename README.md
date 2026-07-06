@@ -2,23 +2,31 @@
 
 > An end-to-end Business Intelligence project simulating an executive cockpit for supply chain operations — built with PostgreSQL, Python, and Power BI.
 
-![Dashboard Preview](docs/dashboard_preview.png)
+> **Screenshot - Executive Overview**
 
+![[Executive_dashboard.png]]
+
+> **Screenshot - Financial Performance
+
+![[Financial_dashboard.png]]
+
+> **Screenshot - Delivery Performance**
+
+![[Delivery_dashboard.png]]
 ---
 
 ## 📌 Table of Contents
 
-- [Business Problem](#-business-problem)
-- [Dataset](#-dataset)
-- [Architecture](#-architecture)
-- [Tech Stack](#-tech-stack)
-- [Dashboard](#-dashboard)
-- [KPIs & DAX Measures](#-kpis--dax-measures)
-- [Key Technical Challenges](#-key-technical-challenges)
-- [Conclusions & Key Findings](#-conclusions--key-findings)
-- [How to Run](#-how-to-run)
-- [Project Structure](#-project-structure)
-
+- Business Problem
+- Dataset
+- Architecture
+- Tech Stack
+- Dashboard
+- KPIs & DAX Measures
+- Key Technical Challenges
+- Conclusions & Key Findings
+- How to Run
+- Project Structure
 ---
 
 ## 🎯 Business Problem
@@ -36,14 +44,14 @@ This dashboard was designed to answer all four questions without requiring the D
 
 ## 🗂️ Dataset
 
-| Field | Detail |
+|Field|Detail|
 |---|---|
-| **Name** | DataCo Smart Supply Chain for Big Data Analysis |
-| **Source** | Kaggle |
-| **Link** | [kaggle.com/datasets/shashwatwork/dataco-smart-supply-chain-for-big-data-analysis](https://www.kaggle.com/datasets/shashwatwork/dataco-smart-supply-chain-for-big-data-analysis) |
-| **Volume** | 180,519 records — 53 columns |
-| **Format** | CSV |
-| **Period** | 2015–2018 |
+|**Name**|DataCo Smart Supply Chain for Big Data Analysis|
+|**Source**|Kaggle|
+|**Link**|[kaggle.com/datasets/shashwatwork/dataco-smart-supply-chain-for-big-data-analysis](https://www.kaggle.com/datasets/shashwatwork/dataco-smart-supply-chain-for-big-data-analysis)|
+|**Volume**|180,519 records — 53 columns|
+|**Format**|CSV|
+|**Period**|2015–2018|
 
 The dataset contains order, shipment, product, customer, and region data in a single flat file — making it a realistic starting point for Star Schema modelling, since real-world data rarely arrives pre-structured.
 
@@ -85,20 +93,19 @@ dim_date       →  date_id, full_date, year, quarter, month, month_name, week, 
 dim_region     →  region_id, region, country, market
 ```
 
-![ERD](docs/erd.png)
+
 
 ---
 
 ## 🛠️ Tech Stack
 
-| Tool | Purpose |
-|---|---|
-| **PostgreSQL** | Relational database — Star Schema design and storage |
+| Tool                                         | Purpose                                                    |
+| -------------------------------------------- | ---------------------------------------------------------- |
+| **PostgreSQL**                               | Relational database — Star Schema design and storage       |
 | **Python** (pandas, psycopg2, python-dotenv) | ETL pipeline — data extraction, transformation and loading |
-| **Jupyter Notebook** | Interactive ETL development and documentation |
-| **Power BI Desktop** | Data modelling, DAX measures, and dashboard visuals |
-| **Power BI Service** | Publishing and sharing |
-| **GitHub** | Version control and portfolio |
+| **Jupyter Notebook**                         | Interactive ETL development and documentation              |
+| **Power BI **                                | Data modelling, DAX measures, and dashboard visuals        |
+| **GitHub**                                   | Version control and portfolio                              |
 
 ---
 
@@ -108,42 +115,41 @@ The dashboard is structured across **three pages**, each serving a distinct anal
 
 ### Page 1 — Executive Overview
 
-Designed for the Operations Director's daily briefing. Answers: *"How are we performing right now?"*
+Designed for the Operations Director's daily briefing. Answers: _"How are we performing right now?"_
 
-| Visual | Content |
-|---|---|
-| Gauge | On-Time Delivery Rate vs. 85% industry benchmark |
-| Card | Gross Margin % |
-| Card | Average Shipping Cost |
-| Card | Average Delay Days |
-| Card | Total Orders |
-| Card | Total Revenue |
-| Filled Map | Revenue by Geography — drill-down Market → Region → Country |
+| Visual     | Content                                            |
+| ---------- | -------------------------------------------------- |
+| Gauge      | On-Time Delivery Rate vs. 85% industry benchmark   |
+| Card       | Gross Margin %                                     |
+| Card       | Average Shipping Cost                              |
+| Card       | Average Delay Days                                 |
+| Card       | Total Orders                                       |
+| Card       | Total Revenue                                      |
+| Filled Map | Revenue by Geography — drill-down Region → Country |
 
 ### Page 2 — Financial Performance
 
-Designed for financial analysis. Answers: *"Where are we making and losing money?"*
+Designed for financial analysis. Answers: _"Where are we making and losing money?"_
 
-| Visual | Content |
+|Visual|Content|
 |---|---|
-| Card | Total Revenue |
-| Card | Total Profit |
-| Bar Chart | Top 10 Categories by Revenue |
-| Line Chart | Gross Margin % Trend (drill-down Year → Quarter → Month) |
-| Table | Performance by Region — Revenue, Profit, Gross Margin %, On-Time Rate |
+|Card|Total Revenue|
+|Card|Total Profit|
+|Bar Chart|Top 10 Categories by Revenue|
+|Line Chart|Gross Margin % Trend (drill-down Year → Quarter → Month)|
+|Table|Performance by Region — Revenue, Profit, Gross Margin %, On-Time Rate|
 
 ### Page 3 — Delivery Performance
 
-Designed for operational deep-dive. Answers: *"Where and why are deliveries failing?"*
+Designed for operational deep-dive. Answers: _"Where and why are deliveries failing?"_
 
-| Visual | Content |
-|---|---|
-| Card | On-Time Delivery Rate |
-| Card | Total Late Deliveries |
-| Card | Average Days Late |
-| Combined Chart | On-Time Rate & Avg Days Late by Shipping Mode |
-| Filled Map | Late Delivery Rate by Country (green = low, red = high) |
-| Scatter | Gross Margin % vs Avg Shipping Cost by Market & Country |
+| Visual         | Content                                                 |
+| -------------- | ------------------------------------------------------- |
+| Card           | Total Late Deliveries                                   |
+| Card           | Average Days Late                                       |
+| Combined Chart | On-Time Rate & Avg Days Late by Shipping Mode           |
+| Filled Map     | Late Delivery Rate by Country (green = low, red = high) |
+| Scatter        | Gross Margin % vs Avg Shipping Cost by Market & Country |
 
 Slicers are **synchronised across all three pages** — Year range, Region, Category, Customer Segment.
 
@@ -151,7 +157,7 @@ Slicers are **synchronised across all three pages** — Year range, Region, Cate
 
 ## 📐 KPIs & DAX Measures
 
-All measures are stored in a dedicated `_Measures` table for organisation. Measures that cross fact tables use `TREATAS()` to propagate filter context — see [Key Technical Challenges](#-key-technical-challenges) for details.
+All measures are stored in a dedicated `_Measures` table for organisation. Measures that cross fact tables use `TREATAS()` to propagate filter context — see [Key Technical Challenges](https://claude.ai/chat/8a064e25-f4c1-4c4b-ba8c-ebc53ce33216#-key-technical-challenges) for details.
 
 ```dax
 Total Revenue =
@@ -282,12 +288,12 @@ The overall **On-Time Delivery Rate of 45.18%** is critically below the **85% in
 
 The breakdown by shipping mode reveals the most alarming finding in the dataset:
 
-| Shipping Mode | On-Time Rate |
+|Shipping Mode|On-Time Rate|
 |---|---|
-| Standard Class | 61.87% |
-| Same Day | 53.85% |
-| Second Class | 23.28% |
-| **First Class** | **4.73%** |
+|Standard Class|61.87%|
+|Same Day|53.85%|
+|Second Class|23.28%|
+|**First Class**|**4.73%**|
 
 **First Class — the most premium shipping option — has only a 4.73% on-time rate**, with Second Class averaging 2.5 days late when delayed. Customers paying for priority delivery are receiving the worst service in the portfolio. This warrants immediate carrier-level investigation.
 
@@ -313,13 +319,13 @@ The scatter analysis reveals that most countries operate with positive margins, 
 
 ### 7. Most Delayed Products
 
-| Product | Late Deliveries |
+|Product|Late Deliveries|
 |---|---|
-| Nike Men's CJ Elite 2 TD Football Cleat | 6,809 |
-| Perfect Fitness Perfect Rip Deck | 3,934 |
-| Pelican Sunstream 100 Kayak | 3,807 |
-| Nike Men's Dri-FIT Victory Golf Polo | 2,800 |
-| Diamondback Women's Serene Classic Comfort Bi | 2,450 |
+|Nike Men's CJ Elite 2 TD Football Cleat|6,809|
+|Perfect Fitness Perfect Rip Deck|3,934|
+|Pelican Sunstream 100 Kayak|3,807|
+|Nike Men's Dri-FIT Victory Golf Polo|2,800|
+|Diamondback Women's Serene Classic Comfort Bi|2,450|
 
 The Nike Men's CJ Elite has nearly **double** the late deliveries of the second-worst product. Given its position as a high-revenue item, the business impact of its delivery failures is compounded — making it the first priority for supply chain investigation.
 
@@ -339,26 +345,30 @@ The Nike Men's CJ Elite has nearly **double** the late deliveries of the second-
 
 - Python 3.8+
 - PostgreSQL 13+
-- Power BI Desktop (free)
+- Power BI Desktop
 
 ### Setup
 
 1. Clone this repository:
+
 ```bash
 git clone https://github.com/your-username/bi-supply-chain.git
 cd bi-supply-chain
 ```
 
 2. Install Python dependencies:
+
 ```bash
 pip install -r requirements.txt
 ```
 
 3. Download the dataset from [Kaggle](https://www.kaggle.com/datasets/shashwatwork/dataco-smart-supply-chain-for-big-data-analysis) and place it in `/data`
-
+    
 4. Create a PostgreSQL database named `supply_chain`
-
+    
 5. Create a `.env` file in the root folder:
+    
+
 ```
 DB_HOST=localhost
 DB_PORT=5432
@@ -369,11 +379,13 @@ DATA_PATH=data/DataCoSupplyChainDataset.csv
 ```
 
 6. Run the SQL script to create the schema:
+
 ```bash
 psql -U postgres -d supply_chain -f sql/01_create_tables.sql
 ```
 
 7. Run the ETL notebook top to bottom:
+
 ```
 notebooks/01_etl_pipeline.ipynb
 ```
@@ -412,11 +424,5 @@ bi-supply-chain/
 
 ---
 
-## 📄 License
-
-This project is open source and available under the [MIT License](LICENSE).
-
----
-
-*Built in June 2026 — Portfolio project by João Ferreira*  
-*Dataset: DataCo Smart Supply Chain for Big Data Analysis (Kaggle)*
+_Built in June 2026 — Portfolio project by João Ferlicíssimo
+_Dataset: DataCo Smart Supply Chain for Big Data Analysis (Kaggle)_
