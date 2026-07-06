@@ -4,15 +4,15 @@
 
 > **Screenshot - Executive Overview**
 
-![[Executive_dashboard.png]]
+![Executive Dashboard](Executive_dashboard.png)
 
 > **Screenshot - Financial Performance
 
-![[Financial_dashboard.png]]
+!(Financial_dashboard.png)
 
 > **Screenshot - Delivery Performance**
 
-![[Delivery_dashboard.png]]
+!(Delivery_dashboard.png)
 ---
 
 ## 📌 Table of Contents
