@@ -55,7 +55,7 @@ This dashboard was designed to answer all four questions without requiring the D
 
 The dataset contains order, shipment, product, customer, and region data in a single flat file — making it a realistic starting point for Star Schema modelling, since real-world data rarely arrives pre-structured.
 
-> **Note:** The dataset is not included in this repository due to file size. Download it from Kaggle and place it in the `/data` folder before running the ETL notebook.
+> **Note:** The dataset is not included in this repository due to file size. Download from Kaggle and place it in the `/data` folder before running the ETL notebook.
 
 ---
 
