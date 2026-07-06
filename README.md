@@ -8,11 +8,11 @@
 
 > **Screenshot - Financial Performance
 
-!(Financial_dashboard.png)
+![Financial Dashboard](Financial_dashboard.png)
 
 > **Screenshot - Delivery Performance**
 
-!(Delivery_dashboard.png)
+![Delivery Dashboard](Delivery_dashboard.png)
 ---
 
 ## 📌 Table of Contents
