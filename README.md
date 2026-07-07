@@ -157,7 +157,7 @@ Slicers are **synchronised across all three pages** — Year range, Region, Cate
 
 ## 📐 KPIs & DAX Measures
 
-All measures are stored in a dedicated `_Measures` table for organisation. Measures that cross fact tables use `TREATAS()` to propagate filter context — see [Key Technical Challenges](https://claude.ai/chat/8a064e25-f4c1-4c4b-ba8c-ebc53ce33216#-key-technical-challenges) for details.
+All measures are stored in a dedicated `_Measures` table for organisation. Measures that cross fact tables use `TREATAS()` to propagate filter context.
 
 ```dax
 Total Revenue =
